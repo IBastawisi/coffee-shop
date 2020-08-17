@@ -24,9 +24,10 @@ CORS(app)
 def get_drinks():
     try:
         drinks = Drink.query.all()
+        drinks_json = [drink.short() for drink in drinks]
         return jsonify({
             'success': True,
-            'drinks': [drink.short() for drink in drinks],
+            'drinks': drinks_json
         })
     except:
         abort(422)
@@ -39,7 +40,7 @@ def get_drinks_detail():
         drinks = Drink.query.all()
         return jsonify({
             'success': True,
-            'drinks': [drink.long() for drink in drinks],
+            'drinks': [drink.long() for drink in drinks]
         })
     except:
         abort(422)
