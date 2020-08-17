@@ -22,21 +22,27 @@ CORS(app)
 
 @app.route('/drinks')
 def get_drinks():
-    drinks = Drink.query.all()
-    return jsonify({
-        'success': True,
-        'drinks': [drink.short() for drink in drinks],
-    })
+    try:
+        drinks = Drink.query.all()
+        return jsonify({
+            'success': True,
+            'drinks': [drink.short() for drink in drinks],
+        })
+    except:
+        abort(422)
 
 
 @app.route('/drinks-detail')
 @requires_auth('get:drinks-detail')
 def get_drinks_detail():
-    drinks = Drink.query.all()
-    return jsonify({
-        'success': True,
-        'drinks': [drink.long() for drink in drinks],
-    })
+    try:
+        drinks = Drink.query.all()
+        return jsonify({
+            'success': True,
+            'drinks': [drink.long() for drink in drinks],
+        })
+    except:
+        abort(422)
 
 
 @app.route('/drinks', methods=['POST'])
@@ -69,8 +75,11 @@ def patch_drink(drink_id):
         if drink is None:
             abort(404)
 
-        drink.title=body['title']
-        drink.recipe=json.dumps(body['recipe'])
+        if('title' in body):
+             drink.title=body['title']
+        if('recipe' in body):
+            drink.recipe=json.dumps(body['recipe'])
+
         drink.update()
 
         return jsonify({
@@ -119,19 +128,7 @@ def not_found(error):
         "message": "resource not found"
     }), 404
 
-@app.errorhandler(401)
-def unauthorized(error):
-    return jsonify({
-        "success": False,
-        "error": 401,
-        "message": "unauthorized"
-    }), 401
-
-@app.errorhandler(403)
-def forbidden(error):
-    return jsonify({
-        "success": False,
-        "error": 403,
-        "message": "permission denied"
-    }), 403
-
+@app.errorhandler(AuthError)
+def handle_auth_errors(error):
+    response = error.error, error.status_code
+    return response
