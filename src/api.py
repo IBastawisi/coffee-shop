@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, send_from_directory
 from sqlalchemy import exc
 import json
 from flask_cors import CORS
@@ -7,16 +7,16 @@ from flask_cors import CORS
 from .database.models import db_drop_and_create_all, setup_db, Drink
 from .auth.auth import AuthError, requires_auth
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='', static_folder=os.path.join(os.getcwd(),'client', 'www'))
 setup_db(app)
 CORS(app)
 
 '''
 @TODO uncomment the following line to initialize the datbase
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
-!! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
+!! NOTE THIS WILL EXECUTE ONLY IF DATABASE WASN'T FOUND
 '''
-# db_drop_and_create_all()
+db_drop_and_create_all()
 
 ## ROUTES
 
@@ -112,6 +112,11 @@ def delete_drink(drink_id):
         abort(422)
 
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    return app.send_static_file("index.html")
+
 ## Error Handling
 @app.errorhandler(422)
 def unprocessable(error):
@@ -123,11 +128,7 @@ def unprocessable(error):
 
 @app.errorhandler(404)
 def not_found(error):
-    return jsonify({
-        "success": False,
-        "error": 404,
-        "message": "resource not found"
-    }), 404
+    return app.send_static_file("index.html")
 
 @app.errorhandler(AuthError)
 def handle_auth_errors(error):
