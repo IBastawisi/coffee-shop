@@ -115,7 +115,7 @@ def delete_drink(drink_id):
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path):
-    return send_from_directory(app.static_folder, 'index.html')
+    return app.send_static_file("index.html")
 
 ## Error Handling
 @app.errorhandler(422)
@@ -128,7 +128,7 @@ def unprocessable(error):
 
 @app.errorhandler(404)
 def not_found(error):
-    return send_from_directory(app.static_folder, 'index.html')
+    return app.send_static_file("index.html")
 
 @app.errorhandler(AuthError)
 def handle_auth_errors(error):
